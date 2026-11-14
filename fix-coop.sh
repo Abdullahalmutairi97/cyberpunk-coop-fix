@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Cyberpunk 2077 co-op crash fix: NightCoop 0.2.1-beta, flight mod off.
+# Cyberpunk 2077 co-op crash fix: NightCoop 0.2.0-beta, flight mod off.
+# 0.2.0-beta on purpose: in 0.2.1-beta a beaten player dies instead of going down.
 # Run with the game closed. Safe to run twice. Nothing is deleted: old files are backed up or moved aside.
 set -euo pipefail
 
-URL="https://nightcoop.net/dl/0.2.1-beta/NightCoop-0.2.1-beta-2.5.zip"
-SHA="fa6e6eb24dd935cac432da3f58736ab6a76633f05c28615a0aa05ca54d7c4807"
+URL="https://nightcoop.net/dl/0.2.0-beta/NightCoop-0.2.0-beta-2.5.zip"
+SHA="ca070aa296519fb4147dadf14a625a538df59d6a20d289fa3e335ae3da3cace5"
 
 say()  { printf '\n%s\n' "$*"; }
 fail() { printf '\nERROR: %s\nTake a photo of this screen and send it to your friend.\n' "$*"; exit 1; }
@@ -24,7 +25,7 @@ if pgrep -f '[C]yberpunk2077\.exe|[R]EDprelauncher' >/dev/null 2>&1; then
   fail "The game is open. Close Cyberpunk 2077, then run this again."
 fi
 
-say "[2/5] Downloading NightCoop 0.2.1-beta (11 MB)..."
+say "[2/5] Downloading NightCoop 0.2.0-beta (10 MB)..."
 TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
 curl -fsSL --retry 3 -o "$TMP/nc.zip" "$URL" || fail "Download failed. Check your internet and run again."
 [ "$(sha256sum "$TMP/nc.zip" | cut -d' ' -f1)" = "$SHA" ] || fail "The download does not match its checksum. Run this again."
@@ -32,7 +33,7 @@ echo "Checksum OK"
 
 say "[3/5] Backing up..."
 STAMP=$(date +%Y%m%d-%H%M%S)
-B="$HOME/cyberpunk-backups/pre-0.2.1-$STAMP"
+B="$HOME/cyberpunk-backups/pre-0.2.0-$STAMP"
 mkdir -p "$B"
 if [ -d "$GAME/red4ext/plugins/NightCoop" ]; then
   mkdir -p "$B/NightCoop"
@@ -48,9 +49,9 @@ for p in "red4ext/plugins/let_there_be_flight" "red4ext/plugins/let_there_be_fli
   if [ -e "$GAME/$p" ]; then rm -rf "$D/$(basename "$p")"; mv "$GAME/$p" "$D/"; echo "moved aside: $p"; fi
 done
 
-say "[5/5] Installing NightCoop 0.2.1-beta..."
+say "[5/5] Installing NightCoop 0.2.0-beta..."
 unzip -oq "$TMP/nc.zip" -x 'r6/scripts/NightCoopFlight/*' -d "$GAME" || fail "Installing failed."
 rm -f "$GAME/r6/cache/final.redscripts.modded"
 [ -f "$GAME/red4ext/plugins/NightCoop/NightCoop.dll" ] || fail "NightCoop.dll is missing after install."
 
-say "Done. Start the game from Steam as usual. You and your friend must both be on 0.2.1-beta."
+say "Done. Start the game from Steam as usual. You and your friend must both be on 0.2.0-beta."
