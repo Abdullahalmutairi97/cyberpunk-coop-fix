@@ -39,7 +39,7 @@ echo "Checksums OK"
 
 say "[3/5] Backing up..."
 STAMP=$(date +%Y%m%d-%H%M%S)
-B="$HOME/cyberpunk-backups/pre-0.2.0-$STAMP"
+B="$HOME/cyberpunk-backups/pre-0.2.1-$STAMP"
 mkdir -p "$B"
 if [ -d "$GAME/red4ext/plugins/NightCoop" ]; then
   mkdir -p "$B/NightCoop"
