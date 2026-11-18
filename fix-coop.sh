@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-# Cyberpunk 2077 co-op crash fix: NightCoop 0.2.0-beta, Codeware 1.21.4, RED4ext 1.31.1, flight mod off.
-# 0.2.0-beta on purpose: in 0.2.1-beta a beaten player dies instead of going down.
+# Cyberpunk 2077 co-op crash fix: NightCoop 0.2.1-beta, Codeware 1.21.4, RED4ext 1.31.1, flight mod off.
 # Run with the game closed. Safe to run twice. Nothing is deleted: old files are backed up or moved aside.
 set -euo pipefail
 
-URL="https://nightcoop.net/dl/0.2.0-beta/NightCoop-0.2.0-beta-2.5.zip"
-SHA="ca070aa296519fb4147dadf14a625a538df59d6a20d289fa3e335ae3da3cace5"
+URL="https://nightcoop.net/dl/0.2.1-beta/NightCoop-0.2.1-beta-2.5.zip"
+SHA="fa6e6eb24dd935cac432da3f58736ab6a76633f05c28615a0aa05ca54d7c4807"
 CW_URL="https://github.com/psiberx/cp2077-codeware/releases/download/v1.21.4/Codeware-1.21.4.zip"
 CW_SHA="cb929d1edb72e23d7e7cc6420014b6557c363992ed6092c8453be9b185d0376b"
 R4_URL="https://github.com/wopss/RED4ext/releases/download/v1.31.1/red4ext-1.31.1.zip"
@@ -29,7 +28,7 @@ if ps -eo comm= | grep -qE '^(Cyberpunk2077|REDprelauncher)'; then
   fail "The game is open. Close Cyberpunk 2077, then run this again."
 fi
 
-say "[2/5] Downloading NightCoop 0.2.0-beta, Codeware 1.21.4, RED4ext 1.31.1 (14 MB)..."
+say "[2/5] Downloading NightCoop 0.2.1-beta, Codeware 1.21.4, RED4ext 1.31.1 (14 MB)..."
 TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
 get() { # file url sha
   curl -fsSL --retry 3 -o "$TMP/$1" "$2" || fail "Download failed ($1). Check your internet and run again."
@@ -65,4 +64,4 @@ unzip -oq "$TMP/r4.zip" -d "$GAME" || fail "Installing RED4ext failed."
 rm -f "$GAME/r6/cache/final.redscripts.modded"
 [ -f "$GAME/red4ext/plugins/NightCoop/NightCoop.dll" ] || fail "NightCoop.dll is missing after install."
 
-say "Done. Start the game from Steam as usual. You and your friend must both be on 0.2.0-beta."
+say "Done. Start the game from Steam as usual. You and your friend must both be on 0.2.1-beta."
