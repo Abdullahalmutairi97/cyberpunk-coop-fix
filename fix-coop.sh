@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
-# Cyberpunk 2077 co-op crash fix: NightCoop 0.2.0-beta, flight mod off.
+# Cyberpunk 2077 co-op crash fix: NightCoop 0.2.0-beta, Codeware 1.21.4, RED4ext 1.31.1, flight mod off.
 # 0.2.0-beta on purpose: in 0.2.1-beta a beaten player dies instead of going down.
 # Run with the game closed. Safe to run twice. Nothing is deleted: old files are backed up or moved aside.
 set -euo pipefail
 
 URL="https://nightcoop.net/dl/0.2.0-beta/NightCoop-0.2.0-beta-2.5.zip"
 SHA="ca070aa296519fb4147dadf14a625a538df59d6a20d289fa3e335ae3da3cace5"
+CW_URL="https://github.com/psiberx/cp2077-codeware/releases/download/v1.21.4/Codeware-1.21.4.zip"
+CW_SHA="cb929d1edb72e23d7e7cc6420014b6557c363992ed6092c8453be9b185d0376b"
+R4_URL="https://github.com/wopss/RED4ext/releases/download/v1.31.1/red4ext-1.31.1.zip"
+R4_SHA="ce10bda503fd48c8674ef3e517d635636a262c089055f189caabeb300eef7932"
 
 say()  { printf '\n%s\n' "$*"; }
 fail() { printf '\nERROR: %s\nTake a photo of this screen and send it to your friend.\n' "$*"; exit 1; }
@@ -21,15 +25,18 @@ for root in "$HOME/.local/share/Steam" "$HOME/.steam/steam" "$HOME/.steam/debian
 done
 [ -n "$GAME" ] || fail "Cyberpunk 2077 was not found."
 echo "Found: $GAME"
-if pgrep -f '[C]yberpunk2077\.exe|[R]EDprelauncher' >/dev/null 2>&1; then
+if ps -eo comm= | grep -qE '^(Cyberpunk2077|REDprelauncher)'; then
   fail "The game is open. Close Cyberpunk 2077, then run this again."
 fi
 
-say "[2/5] Downloading NightCoop 0.2.0-beta (10 MB)..."
+say "[2/5] Downloading NightCoop 0.2.0-beta, Codeware 1.21.4, RED4ext 1.31.1 (14 MB)..."
 TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
-curl -fsSL --retry 3 -o "$TMP/nc.zip" "$URL" || fail "Download failed. Check your internet and run again."
-[ "$(sha256sum "$TMP/nc.zip" | cut -d' ' -f1)" = "$SHA" ] || fail "The download does not match its checksum. Run this again."
-echo "Checksum OK"
+get() { # file url sha
+  curl -fsSL --retry 3 -o "$TMP/$1" "$2" || fail "Download failed ($1). Check your internet and run again."
+  [ "$(sha256sum "$TMP/$1" | cut -d' ' -f1)" = "$3" ] || fail "$1 does not match its checksum. Run this again."
+}
+get nc.zip "$URL" "$SHA"; get cw.zip "$CW_URL" "$CW_SHA"; get r4.zip "$R4_URL" "$R4_SHA"
+echo "Checksums OK"
 
 say "[3/5] Backing up..."
 STAMP=$(date +%Y%m%d-%H%M%S)
@@ -39,6 +46,8 @@ if [ -d "$GAME/red4ext/plugins/NightCoop" ]; then
   mkdir -p "$B/NightCoop"
   (cd "$GAME/red4ext/plugins/NightCoop" && tar --exclude=./logs --exclude='./rtti-names-*' --exclude=./nightcoop.log -cf - .) | tar -xf - -C "$B/NightCoop"
 fi
+[ -d "$GAME/red4ext/plugins/Codeware" ] && cp -r "$GAME/red4ext/plugins/Codeware" "$B/Codeware"
+cp "$GAME/red4ext/RED4ext.dll" "$GAME/bin/x64/winmm.dll" "$B/" 2>/dev/null || true
 SAVES="$ROOT/steamapps/compatdata/1091500/pfx/drive_c/users/steamuser/Saved Games/CD Projekt Red/Cyberpunk 2077"
 [ -d "$SAVES" ] && cp -r "$SAVES" "$B/saves"
 echo "Backup: $B"
@@ -49,8 +58,10 @@ for p in "red4ext/plugins/let_there_be_flight" "red4ext/plugins/let_there_be_fli
   if [ -e "$GAME/$p" ]; then rm -rf "$D/$(basename "$p")"; mv "$GAME/$p" "$D/"; echo "moved aside: $p"; fi
 done
 
-say "[5/5] Installing NightCoop 0.2.0-beta..."
-unzip -oq "$TMP/nc.zip" -x 'r6/scripts/NightCoopFlight/*' -d "$GAME" || fail "Installing failed."
+say "[5/5] Installing..."
+unzip -oq "$TMP/nc.zip" -x 'r6/scripts/NightCoopFlight/*' -d "$GAME" || fail "Installing NightCoop failed."
+unzip -oq "$TMP/cw.zip" -d "$GAME" || fail "Installing Codeware failed."
+unzip -oq "$TMP/r4.zip" -d "$GAME" || fail "Installing RED4ext failed."
 rm -f "$GAME/r6/cache/final.redscripts.modded"
 [ -f "$GAME/red4ext/plugins/NightCoop/NightCoop.dll" ] || fail "NightCoop.dll is missing after install."
 
