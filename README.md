@@ -15,3 +15,9 @@ Close the game after the crash, then run:
     curl -fsSL https://raw.githubusercontent.com/Abdullahalmutairi97/cyberpunk-coop-fix/main/collect-logs.sh | bash
 
 It makes a `cyberpunk-logs-<date>.tar.gz` file on your Desktop. Send that file to your friend. It only reads and copies logs; nothing in the game is changed.
+
+## Crash when your partner's V appears? Update ArchiveXL and TweakXL
+
+Both players need ArchiveXL 1.28.8 and TweakXL 1.12.2. Close the game, then run:
+
+    curl -fsSL https://raw.githubusercontent.com/Abdullahalmutairi97/cyberpunk-coop-fix/main/update-xl.sh | bash
